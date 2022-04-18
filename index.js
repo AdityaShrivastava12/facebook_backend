@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const pool = require('./db.js');
+const pool = require('./connection');
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
@@ -132,3 +132,5 @@ app.get('/user/:id/friends', async(req,res) => {
     res.json(e);
   }
 })
+
+pool.connect();
