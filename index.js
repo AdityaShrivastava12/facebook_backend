@@ -175,7 +175,7 @@ app.post('/friends/:sender_id/:reciever_id', async(req,res) => {
   const reciever_id = req.params.reciever_id;
   try{
     const friends = await pool.query(`INSERT INTO friends VALUES(${sender_id},${reciever_id},false,current_timestamp),(${reciever_id},${sender_id},false,current_timestamp) RETURNING *`);
-    res.send(friends);
+    res.send(friends.rows);
   } catch (e) {
     res.send(e)
   }
