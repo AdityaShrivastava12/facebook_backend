@@ -186,10 +186,11 @@ app.put('friends/:sender_id/:reciever_id', async(req,res) => {
   const sender_id = req.params.sender_id;
   const reciever_id = req.params.reciever_id;
   try{
-    const friends = await pool.query(`UPADATE friends SET flag = true WHERE (person1 = ${sender_id} AND person2 = ${reciever_id}) AND (person2 = ${sender_id} AND person1 = ${reciever_id}) RETURNING *`);
+    const friends = await pool.query(`UPADATE friends SET flag = true WHERE person1 = ${sender_id} AND person2 = ${reciever_id} OR person1 = ${reciever_id} AND person2 = ${sender_id} RETURNING *`);
     res.send(friends.rows);
   } catch (e) {
     res.send(e);
+    console.log(e);
   }
 })
 pool.connect();
