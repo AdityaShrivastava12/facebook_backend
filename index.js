@@ -15,10 +15,12 @@ app.post('/users', async (req, res) => {
       password,
       email,
       phone,
+      age,
+      gender,
       about
     } = req.body;
     console.log(req.body);
-    const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,phone,about) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${phone}','${about}') RETURNING *`);
+    const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,phone,age,gender,about) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${phone}','${age}','${gender}','${about}') RETURNING *`);
     console.log(newUser.rows);
     res.json(newUser.rows);
   } catch (e) {
