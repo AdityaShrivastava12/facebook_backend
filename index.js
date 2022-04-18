@@ -59,7 +59,7 @@ app.post('/users', async (req, res) => {
 })
 
 //add a post
-app.post('/user/:id/post', async(req,res) => {
+app.post('/users/:id/post', async(req,res) => {
   let imageorvideo = null;
   let likes = 0;
   const {title} = req.body;
@@ -67,7 +67,7 @@ app.post('/user/:id/post', async(req,res) => {
   try{
     const post = await pool.query(`INSERT INTO post (title,imageorvideo,createdby,likes,time) VALUES('${title}','${imageorvideo}',${id},${likes},current_timestamp) RETURNING *`);
     console.log(post.rows);
-    res.json(post.rows);
+    res.send(post.rows);
   } catch (e) {
     console.log(e)
     res.send(e)
@@ -76,7 +76,7 @@ app.post('/user/:id/post', async(req,res) => {
 })
 
 //delete a post
-app.delete('/user/post/:id', async(req,res) => {
+app.delete('/users/post/:id', async(req,res) => {
   const postId = req.params.id;
   try{
     const deletedPost = pool.query(`DELETE FROM post WHERE id = ${postId} RETURNING *`);
@@ -87,7 +87,7 @@ app.delete('/user/post/:id', async(req,res) => {
 })
 
 //edit a post
-app.put('/user/post/:id', async(req,res) => {
+app.put('/users/post/:id', async(req,res) => {
   const postId = req.params.id;
   const {title} = req.body;
   try{
@@ -99,7 +99,7 @@ app.put('/user/post/:id', async(req,res) => {
 })
 
 // get feed of a user
-app.get('/user/:id/feed', async(req,res) => {
+app.get('/users/:id/feed', async(req,res) => {
   try {
     const userId = req.params.id;
     const feed = await pool.query(`SELECT post.id, post.title, post.imageorvideo, post.createdby, post.likes,(fb_user.firstname ||' '|| fb_user.lastname) AS fullname FROM post JOIN (SELECT person2 FROM friends WHERE person1 = ${userId} AND flag = true) AS friends ON post.createdby = friends.person2 JOIN fb_user ON friends.person2 = fb_user.id ORDER BY post.time DESC;`);
@@ -113,7 +113,7 @@ app.get('/user/:id/feed', async(req,res) => {
 app.listen(port, () => console.log(`listening on ${port}`));
 
 // get information about a particular user
-app.get('/user/:id', async(req,res) => {
+app.get('/users/:id', async(req,res) => {
   try {
     const id = req.params.id;
     const user = await pool.query(`SELECT * FROM fb_user WHERE id = ${id};`);
@@ -148,7 +148,7 @@ app.get('/', (req,res) => {
 })
 
 //get all the posts of a user
-app.get('/user/:id/posts', async(req,res) => {
+app.get('/users/:id/posts', async(req,res) => {
   const id = req.params.id;
   try{
     const userPosts = await pool.query(`SELECT * FROM post WHERE createdby = ${id} ORDER BY time DESC;`);
@@ -159,7 +159,7 @@ app.get('/user/:id/posts', async(req,res) => {
 })
 
 //get all the friends of a user
-app.get('/user/:id/friends', async(req,res) => {
+app.get('/users/:id/friends', async(req,res) => {
   const id = req.params.id;
   try{
     const friends = await pool.query(`SELECT friends.person2 AS id, (fb_user.firstname ||' '|| fb_user.lastname) AS fullname FROM friends JOIN fb_user ON friends.person2 = fb_user.id WHERE person1 = ${id} AND flag = true;`);
@@ -169,4 +169,4 @@ app.get('/user/:id/friends', async(req,res) => {
   }
 })
 
-pool.connect(() => console.log('connected'));
+pool.connect();
