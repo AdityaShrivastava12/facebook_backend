@@ -56,12 +56,13 @@ app.post('/user/:id/post', async(req,res) => {
   const {title} = req.body;
   const id = req.params.id;
   try{
-    const post = await pool.query(`INSERT INTO post (title,imageorvideo,createdby,likes,time) VALUES('${title})','${imageorvideo}',${id},${likes},current_timestamp) RETURNING *`);
+    const post = await pool.query(`INSERT INTO post (title,imageorvideo,createdby,likes,time) VALUES('${title}','${imageorvideo}',${id},${likes},current_timestamp) RETURNING *`);
     console.log(post.rows);
     res.json(post.rows);
   } catch (e) {
     console.log(e)
     res.json(e)
+    console.log(e);
   }
 })
 
