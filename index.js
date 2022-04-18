@@ -111,6 +111,10 @@ app.get('/posts',async(req,res) => {
   }
 })
 
+app.get('/', (req,res) => {
+  res.send('connected');
+})
+
 //get all the posts of a user
 app.get('/user/:id/posts', async(req,res) => {
   const id = req.params.id;
