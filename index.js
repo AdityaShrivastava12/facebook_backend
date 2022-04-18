@@ -79,7 +79,7 @@ app.post('/users/:id/post', async(req,res) => {
 app.delete('/users/post/:id', async(req,res) => {
   const postId = req.params.id;
   try{
-    const deletedPost = pool.query(`DELETE FROM post WHERE id = ${postId} RETURNING *`);
+    const deletedPost = await pool.query(`DELETE FROM post WHERE id = ${postId} RETURNING *`);
     res.json(deletedPost.rows);
   } catch (e) {
     res.json(e);
