@@ -133,4 +133,4 @@ app.get('/user/:id/friends', async(req,res) => {
   }
 })
 
-pool.connect();
+pool.connect(() => console.log('connected'));
