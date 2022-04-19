@@ -54,8 +54,8 @@ app.post('/register', async (req, res, next) => {
       password,
       email,
       gender,
-    } = req.body;
-    console.log(req.body);
+    } = req.body.body;
+    console.log(req.body.body);
     // if(!firstname || !lastname || !dob || !password || !email || password.length < 6 || !gender) {
     //   res.json('Please fill the details properly');
     //   return;
