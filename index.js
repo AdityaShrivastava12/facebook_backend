@@ -2,13 +2,15 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const pool = require('./connection');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
   const corsWhiteList = [
-    "http://localhost:3000",
+    "http://localhost:3000/",
+    "http://localhost:3001/",
+    "http://localhost:3001/signup",
     "https://facebook-backend-aditya.herokuapp.com/"
   ]
 
@@ -35,7 +37,7 @@ app.use(function (req, res, next) {
 })
 
 // add a user in database
-app.post('/users', async (req, res) => {
+app.post('/register', async (req, res) => {
   try {
     const {
       firstname,
@@ -43,13 +45,19 @@ app.post('/users', async (req, res) => {
       dob,
       password,
       email,
-      phone,
-      age,
       gender,
-      about
     } = req.body;
     console.log(req.body);
-    const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,phone,age,gender,about) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${phone}','${age}','${gender}','${about}') RETURNING *`);
+    if(!firstname || !lastname || !dob || !password || !email || password.length < 6 || !gender) {
+      res.json('Please fill the details properly');
+      return;
+    }
+    // const oldUser = await pool.query(`SELECT * FROM fb_user WHERE email = ${email}`)
+    // if(oldUser.rows.length > 0){
+    //   res.json('User already exists');
+    //   return;
+    // }
+    const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${gender}') RETURNING *`);
     console.log(newUser.rows);
     res.json(newUser.rows);
   } catch (e) {
