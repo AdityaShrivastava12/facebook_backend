@@ -6,12 +6,20 @@ const port = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+    res.append('Access-Control-Allow-Origin', ['*']);
+    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.append('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+
 app.use(function (req, res, next) {
   const corsWhiteList = [
-    "http://localhost:3000/",
-    "http://localhost:3001/",
+    "http://localhost:3000",
+    "http://localhost:3001",
     "http://localhost:3001/signup",
-    "https://facebook-backend-aditya.herokuapp.com/"
+    "http://facebook-backend-aditya.herokuapp.com/register"
   ]
 
   if (corsWhiteList.indexOf(req.headers.origin) !== -1) {
@@ -24,7 +32,7 @@ app.use(function (req, res, next) {
     // Request headers you wish to allow
     res.setHeader(
       "Access-Control-Allow-Headers",
-      "X-Requested-With,content-type"
+      "X-Requested-With,content-type",
     )
 
     // Set to true if you need the website to include cookies in the requests sent
@@ -37,7 +45,7 @@ app.use(function (req, res, next) {
 })
 
 // add a user in database
-app.post('/register', async (req, res) => {
+app.post('/register', async (req, res, next) => {
   try {
     const {
       firstname,
@@ -48,10 +56,10 @@ app.post('/register', async (req, res) => {
       gender,
     } = req.body;
     console.log(req.body);
-    if(!firstname || !lastname || !dob || !password || !email || password.length < 6 || !gender) {
-      res.json('Please fill the details properly');
-      return;
-    }
+    // if(!firstname || !lastname || !dob || !password || !email || password.length < 6 || !gender) {
+    //   res.json('Please fill the details properly');
+    //   return;
+    // }
     // const oldUser = await pool.query(`SELECT * FROM fb_user WHERE email = ${email}`)
     // if(oldUser.rows.length > 0){
     //   res.json('User already exists');
