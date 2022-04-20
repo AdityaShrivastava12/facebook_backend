@@ -7,12 +7,6 @@ const port = process.env.PORT || 3001;
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-    res.append('Access-Control-Allow-Origin', ['*']);
-    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.append('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-});
 
 app.use(function (req, res, next) {
   const corsWhiteList = [
@@ -46,7 +40,7 @@ app.use(function (req, res, next) {
 })
 
 // add a user in database
-app.post('/register', async (req, res, next) => {
+app.post('/register', async (req, res) => {
     const {firstname,lastname,dob,password,email,gender} = req.body;
     console.log({firstname,lastname,dob,password,email,gender});
 
@@ -54,9 +48,7 @@ app.post('/register', async (req, res, next) => {
 
     if(!firstname || !lastname || !dob || !password || !email || !gender){
       errors.push({message: 'All fields are required'});
-    }
-
-    if(password.length < 6){
+    } else if (password.length < 6){
       errors.push({message: 'Password length should be more than 6 characrers'});
     }
 
