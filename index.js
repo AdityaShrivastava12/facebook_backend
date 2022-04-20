@@ -97,7 +97,7 @@ app.get('/login', async(req,res) => {
   const {email} = req.body;
   try{
     const loggedInId = await pool.query(`SELECT id FROM fb_user WHERE email = '${email}'`)
-    res.json(loggedInId.rows[0]['id']);
+    res.json(loggedInId.rows);
   } catch(e){
     console.log(e);
     res.json(e);
