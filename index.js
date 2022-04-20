@@ -51,7 +51,7 @@ app.post('/register', async (req, res) => {
     }
 
     if (password.length < 6){
-      errors.push({message: 'Password length should be more than 6 characrers'});
+      errors.push({message: 'Password length should be more than 6 characters'});
     }
 
     if(!email.includes('@') && !(email.includes('.com') || email.includes('.in'))){
@@ -59,7 +59,7 @@ app.post('/register', async (req, res) => {
     }
 
     if(errors.length > 0){
-      res.json(errors);
+      res.json({errors: errors});
     }
 
     // const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${gender}') RETURNING *`);
