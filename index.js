@@ -59,7 +59,7 @@ app.post('/register', async (req, res) => {
     }
 
     if(errors.length > 0){
-      res.json({errors: errors});
+      res.json({failure: errors});
     }
 
     // const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${gender}') RETURNING *`);
