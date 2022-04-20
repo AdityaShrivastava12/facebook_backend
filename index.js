@@ -54,7 +54,7 @@ app.post('/register', async (req, res) => {
       errors.push({message: 'Password length should be more than 6 characrers'});
     }
 
-    if(!email.includes('@') && !(email.includes('.com') || emai.includes('.in'))){
+    if(!email.includes('@') && !(email.includes('.com') || email.includes('.in'))){
       errors.push({message: 'Enter a valid email'})
     }
 
