@@ -66,7 +66,9 @@ app.post('/register', async (req, res) => {
       pool.query(`SELECT * FROM fb_user WHERE email = '${email}'`, (err,result) => {
         if(err) throw err;
         else {
-          console.log(result.rows);
+          if(result.rows.length > 0){
+            res.json({alreadyExists: 'User already exists'});
+          }
         }
       })
     }
