@@ -46,32 +46,26 @@ app.use(function (req, res, next) {
 
 // add a user in database
 app.post('/register', async (req, res, next) => {
-  try {
-    const {
-      firstname,
-      lastname,
-      dob,
-      password,
-      email,
-      gender,
-    } = req.body.body;
-    console.log(req.body.body);
-    // if(!firstname || !lastname || !dob || !password || !email || password.length < 6 || !gender) {
-    //   res.json('Please fill the details properly');
-    //   return;
-    // }
-    // const oldUser = await pool.query(`SELECT * FROM fb_user WHERE email = ${email}`)
-    // if(oldUser.rows.length > 0){
-    //   res.json('User already exists');
-    //   return;
-    // }
-    const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${gender}') RETURNING *`);
-    console.log(newUser.rows);
-    res.json(newUser.rows);
-  } catch (e) {
-    console.log(e)
-    res.json(e);
-  }
+    const {firstname,lastname,dob,password,email,gender} = req.body;
+    console.log({firstname,lastname,dob,password,email,gender});
+
+    let errors = [];
+
+    if(!firstname || !lastname || !dob || !password || !email || !gender){
+      errors.push({message: 'All fields are required'});
+    }
+
+    if(password.length < 6){
+      errors.push({message: 'Password length should be more than 6 characrers'});
+    }
+
+    if(errors.length > 0){
+      res.json(errors);
+    }
+
+    // const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${gender}') RETURNING *`);
+    // console.log(newUser.rows);
+    // res.json(newUser.rows);
 })
 
 //add a post
@@ -94,10 +88,12 @@ app.post('/users/:id/post', async(req,res) => {
 // login
 app.get('/login/:email', async(req,res) => {
   const email = req.params.email;
+  console.log(email);
   try{
     const loggedInId = await pool.query(`SELECT id FROM fb_user WHERE email = '${email}'`)
-    console.log(loggedInId.rows);
+    console.log(loggedInId);
     res.json(loggedInId.rows);
+    // res.redirect(`/user/${loggedInId.rows[0]['id']}`);
   } catch(e){
     console.log(e);
     res.json(e);
