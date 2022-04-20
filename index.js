@@ -48,8 +48,14 @@ app.post('/register', async (req, res) => {
 
     if(!firstname || !lastname || !dob || !password || !email || !gender){
       errors.push({message: 'All fields are required'});
-    } else if (password.length < 6){
+    }
+
+    if (password.length < 6){
       errors.push({message: 'Password length should be more than 6 characrers'});
+    }
+
+    if(!email.includes('@') && !(email.includes('.com') || emai.includes('.in'))){
+      errors.push({message: 'Enter a valid email'})
     }
 
     if(errors.length > 0){
