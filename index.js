@@ -68,6 +68,14 @@ app.post('/register', async (req, res) => {
         else {
           if(result.rows.length > 0){
             res.json({alreadyExists: 'User already exists'});
+          } else {
+            // encrypt password
+            const hashedPassword = await bcrypt.hash(password,10);
+            // insert user into data base
+            pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${hashedPassword}','${email}','${gender}`, (err,result) => {
+              if(err) throw err;
+              else res.json({success: 'Successfully resgistered'});
+            })
           }
         }
       })
