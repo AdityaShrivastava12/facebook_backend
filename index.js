@@ -19,7 +19,8 @@ app.use(function (req, res, next) {
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3001/signup",
-    "http://facebook-backend-aditya.herokuapp.com/register"
+    "http://facebook-backend-aditya.herokuapp.com/register",
+    "https://facebook-backend-aditya.herokuapp.com/register"
   ]
 
   if (corsWhiteList.indexOf(req.headers.origin) !== -1) {
