@@ -91,6 +91,19 @@ app.post('/users/:id/post', async(req,res) => {
   }
 })
 
+// login
+app.get('/login', async(req,res) => {
+  console.log(req.body);
+  const {email} = req.body;
+  try{
+    const loggedInId = await pool.query(`SELECT id FROM fb_user WHERE email = '${email}'`)
+    res.json(loggedInId.rows[0]['id']);
+  } catch(e){
+    console.log(e);
+    res.json(e);
+  }
+})
+
 //delete a post
 app.delete('/users/post/:id', async(req,res) => {
   const postId = req.params.id;
