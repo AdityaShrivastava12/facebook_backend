@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const pool = require('./connection');
 const port = process.env.PORT || 3001;
+const bcrypt = require('bcrypt');
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -60,6 +61,14 @@ app.post('/register', async (req, res) => {
 
     if(errors.length > 0){
       res.json({failure: errors});
+    } else {
+      // check if user already exists
+      pool.query(`SELECT * FROM fb_user WHERE email = ${email}`, (err,result) => {
+        if(err) throw err;
+        else {
+          console.log(result.rows);
+        }
+      })
     }
 
     // const newUser = await pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${password}','${email}','${gender}') RETURNING *`);
