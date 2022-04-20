@@ -92,11 +92,11 @@ app.post('/users/:id/post', async(req,res) => {
 })
 
 // login
-app.get('/login', async(req,res) => {
-  console.log(req.body);
-  const {email} = req.body;
+app.get('/login/:email', async(req,res) => {
+  const email = req.params.email;
   try{
     const loggedInId = await pool.query(`SELECT id FROM fb_user WHERE email = '${email}'`)
+    console.log(loggedInId.rows);
     res.json(loggedInId.rows);
   } catch(e){
     console.log(e);
