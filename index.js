@@ -72,9 +72,13 @@ app.post('/register', async (req, res) => {
             // encrypt password
             const hashedPassword = await bcrypt.hash(password,10);
             // insert user into data base
-            pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${hashedPassword}','${email}','${gender}'`, (err,result) => {
-              if(err) throw err;
-              else res.json({success: 'Successfully resgistered'});
+            pool.query(`INSERT INTO fb_user (firstname,lastname,dob,password,email,gender) VALUES ('${firstname}','${lastname}','${dob}','${hashedPassword}','${email}','${gender}')`, (err,result) => {
+              if(err){
+                throw err;
+              }
+              else {
+                res.json({success: 'Successfully resgistered'});
+              }
             })
           }
         }
