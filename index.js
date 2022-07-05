@@ -6,20 +6,22 @@ const app = express();
 const bodyParser = require('body-parser');
 const pool = require('./connection');
 const bcrypt = require('bcrypt');
+const verifyJWT = require('./verifyJWT');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 // const passport = require('passport');
 // const initializePassport = require('./passportConfig');
 
 const port = process.env.PORT || 3001;
 
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
-const path = require('path');
+
 
 // initializePassport(passport);
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 // app.use(session({
 //   genid: function(req){
 //     return uuidv4();
@@ -52,10 +54,7 @@ app.use(function (req, res, next) {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
 
     // Request headers you wish to allow
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "X-Requested-With,content-type",
-    )
+    res.setHeader("Access-Control-Allow-Headers" , "X-Requested-With,content-type,authorization");
 
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
@@ -153,6 +152,31 @@ app.post('/users/:id/post', async(req,res) => {
   }
 })
 
+//handleRefreshToken
+app.get('/refresh', async(req,res) => {
+  const cookies = req.cookies;
+  if(!cookies?.jwt) return res.json('unauthorized');
+  console.log(cookies.jwt);
+  const refreshToken = cookies.jwt;
+  const foundUser = await pool.query(`SELECT id FROM fb_user WHERE refreshToken = '${refreshToken}'`);
+  if(!foundUser.rows[0]) return res.json('forbidden') // forbidden
+
+  // evaluate jwt
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+    (err,decoded) => {
+      if(err || foundUser.rows[0].id !== decoded.id) return res.sendStatus(403);
+      const accessToken = jwt.sign(
+        {"id": decoded.id},
+        process.env.ACCESS_TOKEN_SECRET,
+        {expiresIn: '500000s'}
+      )
+      res.json({accessToken});
+    }
+  )
+})
+
 // login
 app.post('/login', async(req,res) => {
   const {email,password} = req.body;
@@ -163,7 +187,6 @@ app.post('/login', async(req,res) => {
   }
   const response = await pool.query(`SELECT * FROM fb_user WHERE email = '${email}'`);
   let foundUser = response.rows[0];
-  console.log(foundUser);
   if(!foundUser){
     return res.json({error: 'User not found'});
   }
@@ -172,24 +195,52 @@ app.post('/login', async(req,res) => {
     // create JWTs
 
     const accessToken = jwt.sign(
-      {"email": foundUser.email},
+      {"id": foundUser.id},
       process.env.ACCESS_TOKEN_SECRET,
       {expiresIn: '500000s'}
     );
 
     const refreshToken = jwt.sign(
-      {"email": foundUser.email},
+      {"id": foundUser.id},
       process.env.REFRESH_TOKEN_SECRET,
       {expiresIn: '10d'}
     );
-    res.json({success: 'successfully logged in', user: foundUser});
+
+    const {id,firstname,lastname,dob,email,about,gender,age,phone} = foundUser;
+
+    //saving refreshToken with current user in the database
+    let response = await pool.query(`UPDATE fb_user SET refreshToken = '${refreshToken}' WHERE email = '${foundUser.email}' RETURNING email,refreshToken`);
+    res.cookie('jwt',refreshToken,{httponly: true, maxAge: 24*60*60*1000});
+    res.json({success: {accessToken,id,firstname,lastname,dob,email,about,gender,age,phone}});
   } else {
     res.json({error: 'Wrong password'});
   }
 })
 
+//logout
+app.get('/logout', async(req,res) => {
+  // on client, also delete the access token
+  const cookies = req.cookies;
+  if(!cookies?.jwt) {console.log('if-1');return res.sendStatus(204);} // successful and no content to send back
+  const refreshToken = cookies.jwt;
+
+  // is refreshToken present in database ?
+  let foundUser = await pool.query(`SELECT id FROM fb_user WHERE refreshToken = '${refreshToken}'`);
+  if(!foundUser.rows[0]){
+    res.clearCookie('jwt',{httponly: true, maxAge: 24*60*60*1000});
+    console.log('if-2')
+    return res.sendStatus(204); // successful but no content
+  }
+
+  // delete the refresh token in database
+  let deleteResponse = await pool.query(`UPDATE fb_user SET refreshToken = null WHERE id = ${foundUser.rows[0].id} RETURNING id`);
+  res.clearCookie('jwt',{httponly: true, maxAge: 24*60*60*1000});
+  res.sendStatus(204);
+  console.log('last')
+})
+
 // get information about a particular user
-app.get(`/users/:id`, async (req,res) => {
+app.get(`/users/:id`,verifyJWT, async (req,res) => {
   const userId = req.params.id;
   try{
     const user = await pool.query(`SELECT * FROM fb_user WHERE id = ${userId}`);
@@ -223,9 +274,9 @@ app.put('/users/post/:id', async(req,res) => {
 })
 
 // get feed of a user
-app.get('/users/:id/feed', async(req,res) => {
+app.get('/users/:id/feed', verifyJWT, async(req,res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user;
     const responseFriends = await pool.query(`SELECT post.id, post.title, post.imageorvideo, post.createdby, post.likes, fb_user.firstname, fb_user.lastname FROM post JOIN (SELECT person2 FROM friends WHERE person1 = ${userId} AND flag = true) AS friends ON post.createdby = friends.person2 JOIN fb_user ON friends.person2 = fb_user.id ORDER BY post.time DESC;`);
     const feedFriends = responseFriends.rows;
     const response = await pool.query(`SELECT post.id,post.title,post.imageorvideo,post.createdby,post.likes,fb_user.firstname,fb_user.lastname FROM post JOIN fb_user ON post.createdby = fb_user.id WHERE fb_user.id = ${userId}`);
